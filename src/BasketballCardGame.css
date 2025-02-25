@@ -1,9 +1,9 @@
 .container {
-  padding: 1rem;
+  padding: 0.5rem;
   background-color: #166534;
   color: white;
   min-height: 100vh;
-  overflow: visible;
+  overflow-x: hidden;
 }
 
 .jokic-cards {
@@ -68,11 +68,13 @@
 }
 
 .button {
-  padding: 0.5rem 1rem;
+  padding: 0.75rem;
+  min-height: 44px; /* Touch target size */
   border-radius: 0.5rem;
   cursor: pointer;
   border: none;
   color: white;
+  font-size: 1rem;
 }
 
 .button-blue {
@@ -115,16 +117,17 @@
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  padding: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5rem;
+  padding: 0.5rem;
   position: relative;
   z-index: 1;
 }
 
 @media (min-width: 768px) {
   .card-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
   }
 }
 
@@ -246,10 +249,9 @@
 }
 
 .game-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .playing-field {
@@ -307,6 +309,8 @@
   padding: 1.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border: 2px solid #4ade80;
+  width: 100%;
+  margin: 0;
 }
 
 .score-title {
@@ -411,12 +415,7 @@
 }
 
 .shop-container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+  padding: 0.5rem;
 }
 
 .shop-section {
@@ -581,10 +580,16 @@
 }
 
 .position-slots {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1rem;
-  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .position-slots {
+    flex-direction: row;
+  }
 }
 
 .position-slot {
@@ -1064,22 +1069,40 @@
 
 /* Update jokic-cards to work with the new layout */
 .jokic-cards {
-  flex: 1;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.jokic-card {
+  width: 140px;
+  min-height: 100px;
 }
 
 .game-status {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 2rem;
+  padding: 1rem;
+}
+
+.game-status-content {
+  width: 95%;
+  max-width: 400px;
+  padding: 1rem;
+}
+
+@media (max-width: 768px) {
+  .game-status h2 {
+    font-size: 2rem;
+  }
+
+  .game-status .final-score,
+  .game-status .target-score {
+    font-size: 1.1rem;
+  }
+
+  .game-status .button {
+    width: 100%;
+    margin-top: 1rem;
+  }
 }
 
 .game-status.won {
@@ -1088,24 +1111,6 @@
 
 .game-status.lost {
   background-color: rgba(153, 27, 27, 0.95); /* red-800 with opacity */
-}
-
-.game-status-content {
-  background-color: #1f2937;
-  padding: 2rem;
-  border-radius: 1rem;
-  text-align: center;
-  max-width: 500px;
-  width: 90%;
-  border: 2px solid;
-}
-
-.won .game-status-content {
-  border-color: #4ade80; /* green-400 */
-}
-
-.lost .game-status-content {
-  border-color: #ef4444; /* red-500 */
 }
 
 .game-status h2 {
@@ -1229,9 +1234,18 @@
 
 .pack-options {
   display: flex;
-  gap: 2rem;
-  justify-content: center;
-  padding: 1rem;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .pack-options {
+    flex-direction: row;
+  }
+
+  .shop-container {
+    padding: 1rem;
+  }
 }
 
 .pack-option {
@@ -1636,14 +1650,13 @@
 }
 
 .stats-tooltip {
-  background-color: #1f2937;
-  border: 2px solid #4ade80;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  color: white;
-  z-index: 1000;
-  min-width: 200px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 300px;
+  z-index: 2000;
 }
 
 .stats-tooltip p {
@@ -1740,4 +1753,48 @@
   margin: 2rem auto 0;
   padding: 1rem 3rem;
   font-size: 1.5rem;
+}
+
+/* Add orientation lock styles */
+.orientation-lock {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #166534;
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.orientation-lock-content {
+  color: white;
+  max-width: 400px;
+}
+
+.orientation-lock-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+  animation: rotate 2s infinite;
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(90deg); }
+}
+
+/* Only show orientation lock on mobile devices in portrait mode */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+  .orientation-lock {
+    display: flex;
+  }
+
+  .container {
+    display: none;
+  }
 } 

@@ -132,41 +132,51 @@ const PlayerCard = ({ player, showStats, disabled, selected, onClick, hasGame, a
     };
   }, [player, hasGame]);
 
-  const handleMouseEnter = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setTooltipPosition({
-      x: rect.right + 10,
-      y: rect.top
-    });
-    setShowTooltip(true);
+  // Handle both mouse and touch events
+  const handleInteractionStart = (e) => {
+    e.preventDefault();
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+      setShowTooltip(true);
+    } else {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setTooltipPosition({
+        x: rect.right + 10,
+        y: rect.top
+      });
+      setShowTooltip(true);
+    }
   };
 
-  const handleMouseLeave = () => {
+  const handleInteractionEnd = () => {
     setShowTooltip(false);
   };
 
   return (
     <>
-  <motion.div
-    whileHover={{ scale: disabled ? 1 : 1.05 }}
-    transition={{ duration: 0.2 }}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-  >
-    <Card 
+      <motion.div
+        whileHover={{ scale: disabled ? 1 : 1.05 }}
+        transition={{ duration: 0.2 }}
+        onMouseEnter={handleInteractionStart}
+        onMouseLeave={handleInteractionEnd}
+        onTouchStart={handleInteractionStart}
+        onTouchEnd={handleInteractionEnd}
+      >
+        <Card 
           className={`card ${disabled ? 'disabled' : ''} ${selected ? 'selected' : ''} 
             ${hasGame ? 'has-game' : ''} ${selected && hasGame ? 'selected-game' : ''}`}
-      onClick={() => !disabled && onClick(player)}
-    >
-      <CardContent>
+          onClick={() => !disabled && onClick(player)}
+        >
+          <CardContent>
             <h2 className="title">{player.name}</h2>
             <div className="player-info">
               <span className="team">{player.team}</span>
               <span className="position">{player.position}</span>
-          </div>
-      </CardContent>
-    </Card>
-  </motion.div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {showTooltip && (
         <div 
@@ -926,6 +936,18 @@ export default function BasketballCardGame() {
     );
   };
 
+  const OrientationLock = () => (
+    <div className="orientation-lock">
+      <div className="orientation-lock-content">
+        <div className="orientation-lock-icon">
+          📱
+        </div>
+        <h2>Please Rotate Your Device</h2>
+        <p>This game is best played in landscape mode. Please rotate your device to continue.</p>
+      </div>
+    </div>
+  );
+
   if (showWelcome) {
     return <WelcomeScreen onStart={() => setShowWelcome(false)} />;
   }
@@ -962,46 +984,48 @@ export default function BasketballCardGame() {
   }
 
   return (
-    <div className="container">
-      <div className="nav-buttons">
-        <Button 
-          onClick={handleShowShop}
-          className="button-blue"
-        >
-          Shop
-        </Button>
-      </div>
-      <div className="game-layout">
-        <div className="series-and-cards">
-          <SeriesWidget />
-          <div className="jokic-cards">
-            {ownedCards.length > 0 ? (
-              <Reorder.Group
-                axis="x"
-                values={ownedCards}
-                onReorder={setOwnedCards}
-                className="jokic-cards-container"
-              >
-                {ownedCards.map((cardId, index) => (
-                  <JokicCard 
-                    key={cardId}
-                    cardId={cardId}
-                    index={index}
-                  />
-                ))}
-              </Reorder.Group>
-            ) : (
-              <div className="no-jokic-cards">
-                Purchase cards in shop
-              </div>
-            )}
-          </div>
-      </div>
+    <>
+      <OrientationLock />
+      <div className="container">
+        <div className="nav-buttons">
+          <Button 
+            onClick={handleShowShop}
+            className="button-blue"
+          >
+            Shop
+          </Button>
+        </div>
+        <div className="game-layout">
+          <div className="series-and-cards">
+            <SeriesWidget />
+            <div className="jokic-cards">
+              {ownedCards.length > 0 ? (
+                <Reorder.Group
+                  axis="x"
+                  values={ownedCards}
+                  onReorder={setOwnedCards}
+                  className="jokic-cards-container"
+                >
+                  {ownedCards.map((cardId, index) => (
+                    <JokicCard 
+                      key={cardId}
+                      cardId={cardId}
+                      index={index}
+                    />
+                  ))}
+                </Reorder.Group>
+              ) : (
+                <div className="no-jokic-cards">
+                  Purchase cards in shop
+                </div>
+              )}
+            </div>
+        </div>
 
-        <div className="button-container">
-          {!lineupSet ? (
-            <>
-       
+          <div className="button-container">
+            {!lineupSet ? (
+              <>
+           
               <Button 
                 onClick={handleSetLineup}
                 className="button-green"
@@ -1013,122 +1037,123 @@ export default function BasketballCardGame() {
                 className="button-yellow"
               >
                 Shop
-        </Button>
-        <Button 
-                onClick={resetGame}
-                className="button-red"
-              >
-                Reset Game
-              </Button>
-            </>
-          ) : (
+            </Button>
             <Button 
-              onClick={gameStatus === 'lost' ? resetGame : handleNextGame}
-              className={gameStatus === 'lost' ? "button-red" : "button-blue"}
-            >
-              {gameStatus === 'lost' ? "Restart Game" : "Next Round"}
-        </Button>
-          )}
-        </div>
-
-        <div className="lineup-row">
-          <ScoreWidget 
-            players={selectedPlayers} 
-            calculateFinalStats={calculateFinalStats}
-            lineupSet={lineupSet}
-            positionAssignments={positionAssignments}
-            currentGames={currentGames}
-            money={money}
-          />
-          
-          <div className="lineup-container">
-            <h2 className="section-title">Set Lineup</h2>
-            <div className="position-slots">
-              {['PG', 'SG', 'SF', 'PF', 'C'].map((position) => (
-                <div key={position} className="position-slot">
-                  <PositionSlot 
-                    position={position}
-                    availablePlayers={dealtPlayers}
-                    onSelect={handlePositionSelect}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="bottom-row">
-          <div className="stats-section">
-            <DateWidget 
-              currentDate={currentDate} 
-              onAdvance={advanceDate}
-              onReset={() => setCurrentDate(SEASON_START_DATE)}
-              games={currentGames}
-              skipsLeft={skipsLeft}
-            />
-      </div>
-
-          <div className="available-players">
-            <h2 className="section-title">Bench</h2>
-            <div className="card-grid">
-        {dealtPlayers.map((player) => (
-          <PlayerCard
-            key={player.id}
-            player={player}
-            showStats={true}
-            disabled={false}
-            selected={selectedPlayers.some(p => p.id === player.id)}
-            onClick={togglePlayer}
-            hasGame={playerHasGame(player, currentGames)}
-            activeCoachEffects={activeCoachEffects}
-          />
-        ))}
-      </div>
-            <div className="discard-button-container">
-              <Button 
-                onClick={discardSelectedPlayers}
-                disabled={selectedPlayers.length === 0 || substitutionsLeft <= 0}
-                className="button-red"
-              >
-                Substitutions Left: {substitutionsLeft} ({selectedPlayers.length})
-              </Button>
-            </div>
-          </div>
-      </div>
-
-        {lineupSet && (
-          <div className={`game-status ${gameStatus}`}>
-            <div className="game-status-content">
-              <h2>{gameStatus === 'won' ? 'Victory!' : 'Defeat'}</h2>
-              <div className="final-score">Final Score: {finalScore}</div>
-              <div className="target-score">Target: {scoreToBeat}</div>
-              {gameStatus === 'won' && (
-                <>
-                  <div className="earnings-breakdown">
-                    <div className="money-earned">Win Bonus: +$3</div>
-                    <div className="money-earned">Unused Substitutions: +${substitutionsLeft}</div>
-                    <div className="total-earned">Total Earned: +${3 + substitutionsLeft}</div>
-                  </div>
-                  <Button 
-                    onClick={handleNextGame}
-                    className="button-green"
+                    onClick={resetGame}
+                    className="button-red"
                   >
-                    Next Round
+                    Reset Game
                   </Button>
-                </>
-              )}
-              {gameStatus === 'lost' && (
+              </>
+            ) : (
+              <Button 
+                onClick={gameStatus === 'lost' ? resetGame : handleNextGame}
+                className={gameStatus === 'lost' ? "button-red" : "button-blue"}
+              >
+                {gameStatus === 'lost' ? "Restart Game" : "Next Round"}
+            </Button>
+            )}
+          </div>
+
+          <div className="lineup-row">
+            <ScoreWidget 
+              players={selectedPlayers} 
+              calculateFinalStats={calculateFinalStats}
+              lineupSet={lineupSet}
+              positionAssignments={positionAssignments}
+              currentGames={currentGames}
+              money={money}
+            />
+            
+            <div className="lineup-container">
+              <h2 className="section-title">Set Lineup</h2>
+              <div className="position-slots">
+                {['PG', 'SG', 'SF', 'PF', 'C'].map((position) => (
+                  <div key={position} className="position-slot">
+                    <PositionSlot 
+                      position={position}
+                      availablePlayers={dealtPlayers}
+                      onSelect={handlePositionSelect}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="bottom-row">
+            <div className="stats-section">
+              <DateWidget 
+                currentDate={currentDate} 
+                onAdvance={advanceDate}
+                onReset={() => setCurrentDate(SEASON_START_DATE)}
+                games={currentGames}
+                skipsLeft={skipsLeft}
+              />
+        </div>
+
+            <div className="available-players">
+              <h2 className="section-title">Bench</h2>
+              <div className="card-grid">
+          {dealtPlayers.map((player) => (
+            <PlayerCard
+              key={player.id}
+              player={player}
+              showStats={true}
+              disabled={false}
+              selected={selectedPlayers.some(p => p.id === player.id)}
+              onClick={togglePlayer}
+              hasGame={playerHasGame(player, currentGames)}
+              activeCoachEffects={activeCoachEffects}
+            />
+          ))}
+        </div>
+              <div className="discard-button-container">
                 <Button 
-                  onClick={() => window.location.reload()}
+                  onClick={discardSelectedPlayers}
+                  disabled={selectedPlayers.length === 0 || substitutionsLeft <= 0}
                   className="button-red"
                 >
-                  Restart Game
+                  Substitutions Left: {substitutionsLeft} ({selectedPlayers.length})
                 </Button>
-              )}
+              </div>
             </div>
-          </div>
-        )}
+        </div>
+
+          {lineupSet && (
+            <div className={`game-status ${gameStatus}`}>
+              <div className="game-status-content">
+                <h2>{gameStatus === 'won' ? 'Victory!' : 'Defeat'}</h2>
+                <div className="final-score">Final Score: {finalScore}</div>
+                <div className="target-score">Target: {scoreToBeat}</div>
+                {gameStatus === 'won' && (
+                  <>
+                    <div className="earnings-breakdown">
+                      <div className="money-earned">Win Bonus: +$3</div>
+                      <div className="money-earned">Unused Substitutions: +${substitutionsLeft}</div>
+                      <div className="total-earned">Total Earned: +${3 + substitutionsLeft}</div>
+                    </div>
+                    <Button 
+                      onClick={handleNextGame}
+                      className="button-green"
+                    >
+                      Next Round
+                    </Button>
+                  </>
+                )}
+                {gameStatus === 'lost' && (
+                  <Button 
+                    onClick={() => window.location.reload()}
+                    className="button-red"
+                  >
+                    Restart Game
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

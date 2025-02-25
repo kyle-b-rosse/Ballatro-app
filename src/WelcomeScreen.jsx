@@ -5,7 +5,7 @@ export default function WelcomeScreen({ onStart }) {
   return (
     <div className="welcome-screen">
       <div className="welcome-content">
-        <h1>Welcome to Basketball Card Game</h1>
+        <h1>Welcome to Ball-atro</h1>
         
         <div className="rules-section">
           <h2>How to Play</h2>
